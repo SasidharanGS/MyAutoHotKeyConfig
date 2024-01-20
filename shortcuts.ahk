@@ -196,7 +196,7 @@ MoveCurrentWindowToRightDesktop()
     updateGlobalVariables()
     WinGet, activeHwnd, ID, A
     DllCall(MoveWindowToDesktopNumberProc, UInt, activeHwnd, UInt, (CurrentDesktop == DesktopCount ? 1 : CurrentDesktop + 1) - 1)
-    ;_switchDesktopToTarget(CurrentDesktop == DesktopCount ? 1 : CurrentDesktop + 1)
+    _switchDesktopToTarget(CurrentDesktop == DesktopCount ? 1 : CurrentDesktop + 1)
 }
 
 MoveCurrentWindowToLeftDesktop()
@@ -205,7 +205,7 @@ MoveCurrentWindowToLeftDesktop()
     updateGlobalVariables()
     WinGet, activeHwnd, ID, A
     DllCall(MoveWindowToDesktopNumberProc, UInt, activeHwnd, UInt, (CurrentDesktop == 1 ? DesktopCount : CurrentDesktop - 1) - 1)
-    ;_switchDesktopToTarget(CurrentDesktop == 1 ? DesktopCount : CurrentDesktop - 1)
+    _switchDesktopToTarget(CurrentDesktop == 1 ? DesktopCount : CurrentDesktop - 1)
 }
 
 ;

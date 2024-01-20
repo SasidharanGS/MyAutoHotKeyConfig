@@ -57,7 +57,7 @@ CapsLock & Left::MoveCurrentWindowToLeftDesktop()
     Return
 }
 
-;3 TOR SERVICE = win+\
+;3 OPEN TOR SERVICE IN NEXT VIRTUAL DESKTOP = win+\
 #\::
 {
     Run "C:\sasidharan_gs\Tor Browser\Browser\TorBrowser\Tor\tor.exe"
@@ -94,19 +94,21 @@ CapsLock & Left::MoveCurrentWindowToLeftDesktop()
     Return
 }
 
-;8 CONTROL PANEL = win+s
+;8 VSCODE = win+c
+#c::
+{
+    Run "code"
+    Return
+}
+
+;9 CONTROL PANEL = win+s
 #s::
 {
     Run "control"
     Return
 }
 
-;9 VSCODE = win+c
-#c::
-{
-    Run "code"
-    Return
-}
+
 
 ;10 CLOSE WINDOWS (alt+F4) = alt+4
 !4::
