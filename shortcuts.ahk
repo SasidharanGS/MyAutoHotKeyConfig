@@ -1,111 +1,236 @@
-﻿; SUSPEND HOTKEYS = alt+s
-!s::
-{
-    Suspend, toggle
-    Return
-}
+#Requires AutoHotkey v1.1.33+
+#SingleInstance Force ; The script will Reload if launched while already running
+#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases
+#KeyHistory 0 ; Ensures user privacy when debugging is not needed
+SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory
+SendMode Input  ; Recommended for new scripts due to its superior speed and reliability
 
-;OPEN SPECIFIC FOLDER IN FILE EXPLORER = win+e
-#e::
-{
-    Run, explorer.exe "C:\sasidharan_gs"
-    Return
-}
+; Globals
+DesktopCount := 2        ; Windows starts with 2 desktops at boot
+CurrentDesktop := 1      ; Desktop count is 1-indexed
+LastOpenedDesktop := 1
 
-; BITWARDEN = win+b
-#b::
-{
-    Run "C:\Users\sasidharan.govindan\AppData\Local\Programs\Bitwarden\Bitwarden.exe"
-    Return
-}
+; DLL
+hVirtualDesktopAccessor := DllCall("LoadLibrary", "Str", A_ScriptDir . "\VirtualDesktopAccessor.dll", "Ptr")
+global IsWindowOnDesktopNumberProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "IsWindowOnDesktopNumber", "Ptr")
+global MoveWindowToDesktopNumberProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "MoveWindowToDesktopNumber", "Ptr")
+global GoToDesktopNumberProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "GoToDesktopNumber", "Ptr")
 
-; VIVALDI = win+v
-#v::
-{
-    Run "C:\Users\sasidharan.govindan\AppData\Local\Vivaldi\Application\vivaldi.exe"
-    Return
-}
+; Main
+SetKeyDelay, 75
+mapDesktopsFromRegistry()
+OutputDebug, [loading] desktops: %DesktopCount% current: %CurrentDesktop%
 
-; FIREFOX = win+f
-#f::
-{
-    Run "C:\Users\sasidharan.govindan\AppData\Local\Mozilla Firefox\firefox.exe"
-    Return
-}
+#Include %A_ScriptDir%\config.ahk
+return
 
-; CONTROL PANEL = win+s
-#s::
+;
+; This function examines the registry to build an accurate list of the current virtual desktops and which one we're currently on.
+; List of desktops appears to be in HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VirtualDesktops
+; On Windows 11 the current desktop UUID appears to be in the same location
+; On previous versions in HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\SessionInfo\1\VirtualDesktops
+;
+mapDesktopsFromRegistry()
 {
-    Run "control"
-    Return
-}
+    global CurrentDesktop, DesktopCount
 
-; VSCODE = win+c
-#c::
-{
-    Run "code"
-    Return
-}
-
-; CLOSE WINDOWS (alt+F4) = alt+4
-!4::
-{
-    Send, !{F4} ; Send Alt+F4 keystroke
-    Return
-}
-
-; MIDDLE CLICK = ctrl+v
-MButton::
-{
-    Send, {Ctrl Down}v{Ctrl Up} ; Simulate "Ctrl+V" key combination
-    Return
-}
-
-
-; GOOGLE SELECTION = win+g
-#g::
-{
-    MyClip := ClipboardAll
-    Clipboard = ; empty the clipboard
-    Send, ^c
-    ClipWait, 2
-    if ErrorLevel  ; ClipWait timed out.
-    {
-        Return
+    ; Get the current desktop UUID. Length should be 32 always, but there's no guarantee this couldn't change in a later Windows release so we check.
+    IdLength := 32
+    SessionId := getSessionId()
+    if (SessionId) {
+        RegRead, CurrentDesktopId, HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VirtualDesktops, CurrentVirtualDesktop
+        if ErrorLevel {
+            RegRead, CurrentDesktopId, HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\SessionInfo\%SessionId%\VirtualDesktops, CurrentVirtualDesktop
+        }
+        
+        if (CurrentDesktopId) {
+            IdLength := StrLen(CurrentDesktopId)
+        }
     }
-    if RegExMatch(Clipboard, "^[^ ]*\.[^ ]*$")
-    {
-        Run "C:\Users\sasidharan.govindan\AppData\Local\Vivaldi\Application\vivaldi.exe" %Clipboard%
+
+    ; Get a list of the UUIDs for all virtual desktops on the system
+    RegRead, DesktopList, HKEY_CURRENT_USER, SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VirtualDesktops, VirtualDesktopIDs
+    if (DesktopList) {
+        DesktopListLength := StrLen(DesktopList)
+        ; Figure out how many virtual desktops there are
+        DesktopCount := floor(DesktopListLength / IdLength)
     }
-    else  
-    {
-        ; Modify some characters that screw up the URL
-        ; RFC 3986 section 2.2 Reserved Characters (January 2005):  !*'();:@&=+$,/?#[]
-        StringReplace, Clipboard, Clipboard, `r`n, %A_Space%, All
-        StringReplace, Clipboard, Clipboard, #, `%23, All
-        StringReplace, Clipboard, Clipboard, &, `%26, All
-        StringReplace, Clipboard, Clipboard, +, `%2b, All
-        StringReplace, Clipboard, Clipboard, ", `%22, All
-        Run % "https://www.google.com/search?hl=en&q=" . clipboard ; uriEncode(clipboard)
+    else {
+        DesktopCount := 1
     }
-    Clipboard := MyClip
-    Return
+
+    ; Parse the REG_DATA string that stores the array of UUID's for virtual desktops in the registry.
+    i := 0
+    while (CurrentDesktopId and i < DesktopCount) {
+        StartPos := (i * IdLength) + 1
+        DesktopIter := SubStr(DesktopList, StartPos, IdLength)
+        OutputDebug, The iterator is pointing at %DesktopIter% and count is %i%.
+
+        ; Break out if we find a match in the list. If we didn't find anything, keep the
+        ; old guess and pray we're still correct :-D.
+        if (DesktopIter = CurrentDesktopId) {
+            CurrentDesktop := i + 1
+            OutputDebug, Current desktop number is %CurrentDesktop% with an ID of %DesktopIter%.
+            break
+        }
+        i++
+    }
 }
 
-; CONTEXT SENSITIVE TERMINAL = win+t
-; SetTitleMatchMode, 2 ; Match the window title partially
-#IfWinExist ahk_exe explorer.exe ; Check if Windows Explorer is open
-#t::
+;
+; This functions finds out ID of current session.
+;
+getSessionId()
 {
-    Send, !d ; Select the current folder path in Windows Explorer
-    Send, ^c ; Copy the folder path to clipboard
-    ClipWait ; Wait for the clipboard to contain the text
-    Run, cmd.exe /K cd "%Clipboard%" ; Open Command Prompt in the current folder
-    Return
+    ProcessId := DllCall("GetCurrentProcessId", "UInt")
+    if ErrorLevel {
+        OutputDebug, Error getting current process id: %ErrorLevel%
+        return
+    }
+    OutputDebug, Current Process Id: %ProcessId%
+
+    DllCall("ProcessIdToSessionId", "UInt", ProcessId, "UInt*", SessionId)
+    if ErrorLevel {
+        OutputDebug, Error getting session id: %ErrorLevel%
+        return
+    }
+    OutputDebug, Current Session Id: %SessionId%
+    return SessionId
 }
-#IfWinNotExist ahk_exe explorer.exe ; If Windows Explorer is not open
-#t::
+
+_switchDesktopToTarget(targetDesktop)
 {
-    Run, cmd.exe ; Open Command Prompt normally
-    Return
+    ; Globals variables should have been updated via updateGlobalVariables() prior to entering this function
+    global CurrentDesktop, DesktopCount, LastOpenedDesktop
+
+    ; Don't attempt to switch to an invalid desktop
+    if (targetDesktop > DesktopCount || targetDesktop < 1 || targetDesktop == CurrentDesktop) {
+        OutputDebug, [invalid] target: %targetDesktop% current: %CurrentDesktop%
+        return
+    }
+
+    LastOpenedDesktop := CurrentDesktop
+
+    ; Fixes the issue of active windows in intermediate desktops capturing the switch shortcut and therefore delaying or stopping the switching sequence. This also fixes the flashing window button after switching in the taskbar. More info: https://github.com/pmb6tz/windows-desktop-switcher/pull/19
+    WinActivate, ahk_class Shell_TrayWnd
+
+    DllCall(GoToDesktopNumberProc, Int, targetDesktop-1)
+
+    ; Makes the WinActivate fix less intrusive
+    Sleep, 50
+    focusTheForemostWindow(targetDesktop)
+}
+
+updateGlobalVariables()
+{
+    ; Re-generate the list of desktops and where we fit in that. We do this because
+    ; the user may have switched desktops via some other means than the script.
+    mapDesktopsFromRegistry()
+}
+
+switchDesktopByNumber(targetDesktop)
+{
+    global CurrentDesktop, DesktopCount
+    updateGlobalVariables()
+    _switchDesktopToTarget(targetDesktop)
+}
+
+switchDesktopToLastOpened()
+{
+    global CurrentDesktop, DesktopCount, LastOpenedDesktop
+    updateGlobalVariables()
+    _switchDesktopToTarget(LastOpenedDesktop)
+}
+
+switchDesktopToRight()
+{
+    global CurrentDesktop, DesktopCount
+    updateGlobalVariables()
+    _switchDesktopToTarget(CurrentDesktop == DesktopCount ? 1 : CurrentDesktop + 1)
+}
+
+switchDesktopToLeft()
+{
+    global CurrentDesktop, DesktopCount
+    updateGlobalVariables()
+    _switchDesktopToTarget(CurrentDesktop == 1 ? DesktopCount : CurrentDesktop - 1)
+}
+
+focusTheForemostWindow(targetDesktop) {
+    foremostWindowId := getForemostWindowIdOnDesktop(targetDesktop)
+    if isWindowNonMinimized(foremostWindowId) {
+        WinActivate, ahk_id %foremostWindowId%
+    }
+}
+
+isWindowNonMinimized(windowId) {
+    WinGet MMX, MinMax, ahk_id %windowId%
+    return MMX != -1
+}
+
+getForemostWindowIdOnDesktop(n)
+{
+    n := n - 1 ; Desktops start at 0, while in script it's 1
+
+    ; winIDList contains a list of windows IDs ordered from the top to the bottom for each desktop.
+    WinGet winIDList, list
+    Loop % winIDList {
+        windowID := % winIDList%A_Index%
+        windowIsOnDesktop := DllCall(IsWindowOnDesktopNumberProc, UInt, windowID, UInt, n)
+        ; Select the first (and foremost) window which is in the specified desktop.
+        if (windowIsOnDesktop == 1) {
+            return windowID
+        }
+    }
+}
+
+MoveCurrentWindowToDesktop(desktopNumber) {
+    WinGet, activeHwnd, ID, A
+    DllCall(MoveWindowToDesktopNumberProc, UInt, activeHwnd, UInt, desktopNumber - 1)
+    switchDesktopByNumber(desktopNumber)
+}
+
+MoveCurrentWindowToRightDesktop()
+{
+    global CurrentDesktop, DesktopCount
+    updateGlobalVariables()
+    WinGet, activeHwnd, ID, A
+    DllCall(MoveWindowToDesktopNumberProc, UInt, activeHwnd, UInt, (CurrentDesktop == DesktopCount ? 1 : CurrentDesktop + 1) - 1)
+    ;_switchDesktopToTarget(CurrentDesktop == DesktopCount ? 1 : CurrentDesktop + 1)
+}
+
+MoveCurrentWindowToLeftDesktop()
+{
+    global CurrentDesktop, DesktopCount
+    updateGlobalVariables()
+    WinGet, activeHwnd, ID, A
+    DllCall(MoveWindowToDesktopNumberProc, UInt, activeHwnd, UInt, (CurrentDesktop == 1 ? DesktopCount : CurrentDesktop - 1) - 1)
+    ;_switchDesktopToTarget(CurrentDesktop == 1 ? DesktopCount : CurrentDesktop - 1)
+}
+
+;
+; This function creates a new virtual desktop and switches to it
+;
+createVirtualDesktop()
+{
+    global CurrentDesktop, DesktopCount
+    Send, #^d
+    DesktopCount++
+    CurrentDesktop := DesktopCount
+    OutputDebug, [create] desktops: %DesktopCount% current: %CurrentDesktop%
+}
+
+;
+; This function deletes the current virtual desktop
+;
+deleteVirtualDesktop()
+{
+    global CurrentDesktop, DesktopCount, LastOpenedDesktop
+    Send, #^{F4}
+    if (LastOpenedDesktop >= CurrentDesktop) {
+        LastOpenedDesktop--
+    }
+    DesktopCount--
+    CurrentDesktop--
+    OutputDebug, [delete] desktops: %DesktopCount% current: %CurrentDesktop%
 }
