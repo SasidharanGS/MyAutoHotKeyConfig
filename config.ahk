@@ -62,7 +62,7 @@ CapsLock & Left::MoveCurrentWindowToLeftDesktop()
 {
     Run "C:\sasidharan_gs\Tor Browser\Browser\TorBrowser\Tor\tor.exe"
     Sleep, 1000
-    MoveCurrentWindowToRightDesktop()
+    MoveCurrentWindowToDesktop(2)
     Return
 }
 
