@@ -42,5 +42,11 @@ This Autohotkey (.ahk) file contains all the shortcuts I use in windows to get f
 # Auto-Startup instructions: 
 - Open the "Run" dialog box with "win+r"
 - Execute "shell:startup"
-- Paste the .ahk file in this location
+- Create a shortcut to "shortcuts.ahk" in this location
 - Enjoy script autostart on boot
+<br>
+<hr>
+<br>
+
+# Future:
+Subject to non-periodic updates. Feel free to tinker with and suggest improvements to the code :)
