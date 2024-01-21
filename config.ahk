@@ -53,14 +53,14 @@ CapsLock & Left::MoveCurrentWindowToLeftDesktop()
 ;2 OPEN SPECIFIC FOLDER IN FILE EXPLORER = win+e
 #e::
 {
-    Run, explorer.exe "C:\sasidharan_gs"
+    Run, explorer.exe "C:\Users\sasidharan.govindan\sasidharan_gs"
     Return
 }
 
 ;3 OPEN TOR SERVICE IN NEXT VIRTUAL DESKTOP = win+\
 #\::
 {
-    Run "C:\sasidharan_gs\Tor Browser\Browser\TorBrowser\Tor\tor.exe"
+    Run "C:\Users\sasidharan.govindan\sasidharan_gs\useless\Tor Browser\Tor Service.lnk"
     Sleep, 1000
     MoveCurrentWindowToDesktop(2)
     Return
@@ -69,7 +69,7 @@ CapsLock & Left::MoveCurrentWindowToLeftDesktop()
 ;4 TOR BROWSER = win+w
 #w::
 {
-    Run "C:\sasidharan_gs\Tor Browser\Start Tor Browser"
+    Run "C:\Users\sasidharan.govindan\sasidharan_gs\useless\Tor Browser\Start Tor Browser.lnk"
     Return
 }
 
@@ -97,27 +97,46 @@ CapsLock & Left::MoveCurrentWindowToLeftDesktop()
 ;8 VSCODE = win+c
 #c::
 {
-    Run "code"
+    Run "C:\Users\sasidharan.govindan\AppData\Local\Programs\Microsoft VS Code\Code.exe"
     Return
 }
 
-;9 CONTROL PANEL = win+s
+;9 OUTLOOK = win+o
+#o::
+{
+    Run "C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE"
+    Return
+}
+
+;10 TEAMS = win+ctrl+t
+#^t::
+{
+    Run "C:\Users\sasidharan.govindan\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Teams classic (work or school).lnk"
+    Return
+}
+
+;11 OBSIDIAN = win+a
+#a::
+{
+    Run "C:\Users\sasidharan.govindan\AppData\Local\Programs\obsidian\Obsidian.exe"
+    Return
+}
+
+;12 CONTROL PANEL = win+s
 #s::
 {
     Run "control"
     Return
 }
 
-
-
-;10 CLOSE WINDOWS (alt+F4) = alt+4
+;13 CLOSE WINDOWS (alt+F4) = alt+4
 !4::
 {
     Send, !{F4} ; Send Alt+F4 keystroke
     Return
 }
 
-;11 MIDDLE CLICK = ctrl+v
+;14 MIDDLE CLICK = ctrl+v
 MButton::
 {
     Send, {Ctrl Down}v{Ctrl Up} ; Simulate "Ctrl+V" key combination
@@ -125,7 +144,7 @@ MButton::
 }
 
 
-;12 GOOGLE SELECTION = win+g
+;15 GOOGLE SELECTION = win+g
 #g::
 {
     MyClip := ClipboardAll
@@ -155,7 +174,7 @@ MButton::
     Return
 }
 
-;13 CONTEXT SENSITIVE TERMINAL = win+t
+;16 CONTEXT SENSITIVE TERMINAL = win+t
 ; SetTitleMatchMode, 2 ; Match the window title partially
 #IfWinExist ahk_exe explorer.exe ; Check if Windows Explorer is open
 #t::
@@ -170,5 +189,12 @@ MButton::
 #t::
 {
     Run, cmd.exe ; Open Command Prompt normally
+    Return
+}
+
+;17 CHANGE WALLPAPER = win+m
+#m::
+{
+    Run "C:\Users\sasidharan.govindan\sasidharan_gs\git_projects\MyAutoHotKeyConfig\wallpaper_changer.bat"
     Return
 }
