@@ -43,21 +43,28 @@ CapsLock & Left::MoveCurrentWindowToLeftDesktop()
 
 
 ; KEYBOARD SHORTCUTS
-;1 SUSPEND HOTKEYS = alt+s
+;1 CHANGE WALLPAPER = win+m
+#m::
+{
+    RunWait "C:\Users\sasidharan.govindan\sasidharan_gs\git_projects\MyAutoHotKeyConfig\wallpaper_changer.bat"
+    Return
+}
+
+;2 SUSPEND HOTKEYS = alt+s
 !s::
 {
     Suspend, toggle
     Return
 }
 
-;2 OPEN SPECIFIC FOLDER IN FILE EXPLORER = win+e
+;3 OPEN SPECIFIC FOLDER IN FILE EXPLORER = win+e
 #e::
 {
     Run, explorer.exe "C:\Users\sasidharan.govindan\sasidharan_gs"
     Return
 }
 
-;3 OPEN TOR SERVICE IN NEXT VIRTUAL DESKTOP = win+\
+;4 OPEN TOR SERVICE IN NEXT VIRTUAL DESKTOP = win+\
 #\::
 {
     Run "C:\Users\sasidharan.govindan\sasidharan_gs\useless\Tor Browser\Tor Service.lnk"
@@ -66,77 +73,77 @@ CapsLock & Left::MoveCurrentWindowToLeftDesktop()
     Return
 }
 
-;4 TOR BROWSER = win+w
+;5 TOR BROWSER = win+w
 #w::
 {
     Run "C:\Users\sasidharan.govindan\sasidharan_gs\useless\Tor Browser\Start Tor Browser.lnk"
     Return
 }
 
-;5 BITWARDEN = win+b
+;6 BITWARDEN = win+b
 #b::
 {
     Run "C:\Users\sasidharan.govindan\AppData\Local\Programs\Bitwarden\Bitwarden.exe"
     Return
 }
 
-;6 VIVALDI = win+v
+;7 VIVALDI = win+v
 #v::
 {
     Run "C:\Users\sasidharan.govindan\AppData\Local\Vivaldi\Application\vivaldi.exe"
     Return
 }
 
-;7 FIREFOX = win+f
+;8 FIREFOX = win+f
 #f::
 {
     Run "C:\Users\sasidharan.govindan\AppData\Local\Mozilla Firefox\firefox.exe"
     Return
 }
 
-;8 VSCODE = win+c
+;9 VSCODE = win+c
 #c::
 {
     Run "C:\Users\sasidharan.govindan\AppData\Local\Programs\Microsoft VS Code\Code.exe"
     Return
 }
 
-;9 OUTLOOK = win+o
+;10 OUTLOOK = win+o
 #o::
 {
     Run "C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE"
     Return
 }
 
-;10 TEAMS = win+ctrl+t
+;11 TEAMS = win+ctrl+t
 #^t::
 {
     Run "C:\Users\sasidharan.govindan\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Microsoft Teams classic (work or school).lnk"
     Return
 }
 
-;11 OBSIDIAN = win+a
+;12 OBSIDIAN = win+a
 #a::
 {
     Run "C:\Users\sasidharan.govindan\AppData\Local\Programs\obsidian\Obsidian.exe"
     Return
 }
 
-;12 CONTROL PANEL = win+s
+;13 CONTROL PANEL = win+s
 #s::
 {
     Run "control"
     Return
 }
 
-;13 CLOSE WINDOWS (alt+F4) = alt+4
+;14 CLOSE WINDOWS (alt+F4) = alt+4
 !4::
 {
     Send, !{F4} ; Send Alt+F4 keystroke
     Return
 }
 
-;14 MIDDLE CLICK = ctrl+v
+;15 MIDDLE CLICK = ctrl+v
 MButton::
 {
     Send, {Ctrl Down}v{Ctrl Up} ; Simulate "Ctrl+V" key combination
@@ -144,7 +151,7 @@ MButton::
 }
 
 
-;15 GOOGLE SELECTION = win+g
+;16 GOOGLE SELECTION = win+g
 #g::
 {
     MyClip := ClipboardAll
@@ -174,7 +181,7 @@ MButton::
     Return
 }
 
-;16 CONTEXT SENSITIVE TERMINAL = win+t
+;17 CONTEXT SENSITIVE TERMINAL = win+t
 ; SetTitleMatchMode, 2 ; Match the window title partially
 #IfWinExist ahk_exe explorer.exe ; Check if Windows Explorer is open
 #t::
@@ -189,12 +196,5 @@ MButton::
 #t::
 {
     Run, cmd.exe ; Open Command Prompt normally
-    Return
-}
-
-;17 CHANGE WALLPAPER = win+m
-#m::
-{
-    Run "C:\Users\sasidharan.govindan\sasidharan_gs\git_projects\MyAutoHotKeyConfig\wallpaper_changer.bat"
     Return
 }
